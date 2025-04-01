@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour
     public float currentSpeed; 
     public float gravity = 9.81f; 
     public float jumpForce = 5f;
+    public float stumbleAmount = 0.5f;
     private bool isOnGround = true;
 
     private Rigidbody playerRb;
@@ -54,8 +55,16 @@ public class PlayerController : MonoBehaviour
         float x = Input.GetAxisRaw("Horizontal");
         float z = Input.GetAxisRaw("Vertical");
 
-        // Calculate movement direction
-        moveDirection = transform.right * x + transform.forward * z;
+        // Calculate random "Stumble" movement
+        Vector3 stumbleModifier = new Vector3(
+            Random.Range(-stumbleAmount, stumbleAmount),
+            0,
+            Random.Range(-stumbleAmount, stumbleAmount)
+        );
+
+
+        // Calculate movement direction + apply stumble modifier
+        moveDirection = transform.right * (x + stumbleModifier.x) + transform.forward * (z + stumbleModifier.z);
         moveDirection.y = 0;
 
         // Apply movement
