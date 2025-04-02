@@ -10,6 +10,9 @@ public class CameraController : MonoBehaviour
     private float xRotation = 0f;
     private Transform playerBody;
 
+    private Vector3 stumbleRotation;
+    
+
     void Start()
     {
         // Lock and hide cursor
@@ -31,9 +34,21 @@ public class CameraController : MonoBehaviour
         xRotation = Mathf.Clamp(xRotation, -90f, 90f);
 
         // Apply vertical rotation
-        transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+        transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f) * Quaternion.Euler(stumbleRotation);
+
 
         // Rotate player horizontally
         playerBody.Rotate(Vector3.up * mouseX);
+
+
+    }
+
+    public void StumbleDrift(Vector3 stumbleModifier)
+    {
+        // Stumble modifier
+        Vector3 targetRotation = new Vector3(stumbleModifier.z * 5f, stumbleModifier.x * 5f, stumbleModifier.x * 5f);
+
+        // Smooth 
+        stumbleRotation = Vector3.Lerp(stumbleRotation, stumbleRotation, 2f * Time.deltaTime);
     }
 }
