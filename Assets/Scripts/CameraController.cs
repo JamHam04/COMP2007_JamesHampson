@@ -45,10 +45,7 @@ public class CameraController : MonoBehaviour
 
     public void StumbleDrift(Vector3 stumbleModifier)
     {
-        // Stumble modifier
-        Vector3 targetRotation = new Vector3(stumbleModifier.z * 5f, stumbleModifier.x * 5f, stumbleModifier.x * 5f);
-
-        // Smooth 
-        stumbleRotation = Vector3.Lerp(stumbleRotation, stumbleRotation, 2f * Time.deltaTime);
+        stumbleRotation = Vector3.Lerp(stumbleRotation, new Vector3(stumbleModifier.z * 5f, stumbleModifier.x * 5f, stumbleModifier.x * 5f), 2f * Time.deltaTime);
     }
 }
+
