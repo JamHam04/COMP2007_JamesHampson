@@ -6,8 +6,8 @@ public class PlayerController : MonoBehaviour
 {
     public float speed = 5f;
     public float sprintSpeed = 10f;
-    public float currentSpeed; 
-    public float gravity = 9.81f; 
+    public float currentSpeed;
+    public float gravity = 9.81f;
     public float jumpForce = 5f;
     public float stumbleAmount = 2f;
     private bool isOnGround = true;
@@ -26,8 +26,9 @@ public class PlayerController : MonoBehaviour
         cameraController = GetComponentInChildren<CameraController>();
     }
 
-    private void Update()
+    void Update()
     {
+        // Adjust speed based on sprinting
         if (Input.GetKey(KeyCode.LeftShift))
         {
             currentSpeed = sprintSpeed; // Sprint speed
@@ -41,16 +42,26 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space) && isOnGround)
         {
             playerRb.velocity = new Vector3(playerRb.velocity.x, jumpForce, playerRb.velocity.z);
-            isOnGround = false; // Player in air
-            // Check prototype 3 for jumping animation and sound fx
+            isOnGround = false; // Player is in air
         }
+
+        // Calculate random "Stumble" movement (to be applied in FixedUpdate)
+        Vector3 stumbleRange = new Vector3(
+            Random.Range(-stumbleAmount, stumbleAmount),
+            0,
+            Random.Range(-stumbleAmount, stumbleAmount)
+        );
+
+        // Smoothly interpolate the stumble modifier
+        stumbleModifier = Vector3.Lerp(stumbleModifier, stumbleRange, 1f * Time.deltaTime);
     }
 
     private void OnCollisionEnter(Collision collision)
     {
+        // When player hits the ground, mark as grounded
         if (collision.gameObject.CompareTag("Ground"))
         {
-            isOnGround = true; // Only jump on ground
+            isOnGround = true;
         }
     }
 
@@ -60,23 +71,15 @@ public class PlayerController : MonoBehaviour
         float x = Input.GetAxisRaw("Horizontal");
         float z = Input.GetAxisRaw("Vertical");
 
-        // Calculate random "Stumble" movement
-        Vector3 stumbleRange = new Vector3(
-            Random.Range(-stumbleAmount, stumbleAmount),
-            0,
-            Random.Range(-stumbleAmount, stumbleAmount)
-        );
-
-        // Calculate stumble modifier smoothly
-        stumbleModifier = Vector3.Lerp(stumbleModifier, stumbleRange, 1f * Time.fixedDeltaTime);
-
-        // Calculate movement direction + apply stumble modifier
+        // Calculate movement direction and apply stumble modifier
         moveDirection = transform.right * (x + stumbleModifier.x) + transform.forward * (z + stumbleModifier.z);
-        moveDirection.y = 0;
+        moveDirection.y = 0; // Keep the movement on the horizontal plane
 
-        // Apply movement
-        playerRb.velocity = new Vector3(moveDirection.x * currentSpeed, playerRb.velocity.y - (gravity * Time.fixedDeltaTime), moveDirection.z * currentSpeed);
+        // Apply movement, handling gravity automatically through Rigidbody
+        Vector3 velocity = new Vector3(moveDirection.x * currentSpeed, playerRb.velocity.y, moveDirection.z * currentSpeed);
+        playerRb.velocity = velocity;
 
+        // Apply stumble drift to camera (now in LateUpdate for smoother rotation)
         cameraController.StumbleDrift(stumbleModifier);
     }
 }
