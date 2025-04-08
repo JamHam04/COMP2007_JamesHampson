@@ -12,6 +12,8 @@ public class PlayerController : MonoBehaviour
     public float stumbleAmount = 2f;
     private bool isOnGround = true;
 
+    public Vector3 riverRespawn = new Vector3(93, 9, 44);
+
     private Rigidbody playerRb;
     private Vector3 moveDirection;
     private Vector3 stumbleModifier;
@@ -63,6 +65,23 @@ public class PlayerController : MonoBehaviour
         {
             isOnGround = true;
         }
+
+        if (collision.gameObject.CompareTag("Water"))
+        {
+            RiverTeleport();
+        }
+
+
+
+
+    }
+
+    private void RiverTeleport()
+    {
+        // Move player and reset velocity
+        playerRb.velocity = Vector3.zero; 
+        playerRb.angularVelocity = Vector3.zero;
+        transform.position = riverRespawn; 
     }
 
     void FixedUpdate()
