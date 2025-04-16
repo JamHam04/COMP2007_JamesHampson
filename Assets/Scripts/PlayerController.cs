@@ -20,6 +20,11 @@ public class PlayerController : MonoBehaviour
 
     private CameraController cameraController;
 
+    public float maxSlopeAngle = 45f; // Max walkable angle
+public float bounceForce = 8f;    // Strength of the bounce
+private RaycastHit slopeHit;
+
+
     void Start()
     {
         playerRb = GetComponent<Rigidbody>();
@@ -100,5 +105,7 @@ public class PlayerController : MonoBehaviour
 
         // Apply stumble drift to camera (now in LateUpdate for smoother rotation)
         cameraController.StumbleDrift(stumbleModifier);
+
+
     }
 }
