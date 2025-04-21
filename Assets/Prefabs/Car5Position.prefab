@@ -421,7 +421,7 @@ GameObject:
   - component: {fileID: 7442669217771397816}
   m_Layer: 0
   m_Name: Car5Position
-  m_TagString: Untagged
+  m_TagString: Car
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -456,6 +456,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   carSpeed: 60
   direction: 1
+  detectionRange: 20
+  minSpeed: 0
 --- !u!65 &7442669217771397816
 BoxCollider:
   m_ObjectHideFlags: 0

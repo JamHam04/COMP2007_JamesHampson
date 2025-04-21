@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
@@ -12,17 +14,23 @@ public class PlayerController : MonoBehaviour
     public float stumbleAmount = 2f;
     private bool isOnGround = true;
 
+    // Respawn Locations
     public Vector3 riverRespawn = new Vector3(93, 9, 44);
+    public Vector3 carRespawn = new Vector3(163, 15, 44);
+    public Vector3 respawnRotation = new Vector3(0, 90, 0);
 
-    private Rigidbody playerRb;
+    
     private Vector3 moveDirection;
     private Vector3 stumbleModifier;
 
+    public int lives = 3;
+    public TextMeshProUGUI livesCounter;
+    public List<Image> livesIcons;
+
+    private Rigidbody playerRb;
     private CameraController cameraController;
 
-    public float maxSlopeAngle = 45f; // Max walkable angle
-public float bounceForce = 8f;    // Strength of the bounce
-private RaycastHit slopeHit;
+
 
 
     void Start()
@@ -52,12 +60,30 @@ private RaycastHit slopeHit;
             isOnGround = false; // Player is in air
         }
 
-        // Calculate random "Stumble" movement (to be applied in FixedUpdate)
-        Vector3 stumbleRange = new Vector3(
-            Random.Range(-stumbleAmount, stumbleAmount),
-            0,
-            Random.Range(-stumbleAmount, stumbleAmount)
-        );
+        float x = Input.GetAxisRaw("Horizontal");
+        float z = Input.GetAxisRaw("Vertical");
+
+
+        Vector3 stumbleRange;
+
+        if (x != 0 || z != 0)
+        {
+            stumbleRange = new Vector3(
+                Random.Range(-stumbleAmount, stumbleAmount) * currentSpeed,
+                0,
+                Random.Range(-stumbleAmount, stumbleAmount) * currentSpeed
+            );
+        } else
+        {
+            // Calculate random "Stumble" movement (to be applied in FixedUpdate)
+            stumbleRange = new Vector3(
+                Random.Range(-stumbleAmount, stumbleAmount),
+                0,
+                Random.Range(-stumbleAmount, stumbleAmount)
+            );
+        }
+
+
 
         // Smoothly interpolate the stumble modifier
         stumbleModifier = Vector3.Lerp(stumbleModifier, stumbleRange, 1f * Time.deltaTime);
@@ -76,17 +102,58 @@ private RaycastHit slopeHit;
             RiverTeleport();
         }
 
-
+        if (collision.gameObject.CompareTag("Car"))
+        {
+            CarTeleport();
+        }
 
 
     }
 
     private void RiverTeleport()
     {
+        // Subtract life
+        lives--;
+
+        if (lives <= 0)
+        {
+            GameOver();
+            return;
+        }
         // Move player and reset velocity
         playerRb.velocity = Vector3.zero; 
         playerRb.angularVelocity = Vector3.zero;
-        transform.position = riverRespawn; 
+        transform.position = riverRespawn;
+        transform.rotation = Quaternion.Euler(respawnRotation);
+    }
+
+    private void CarTeleport()
+    {
+        // Subtract life
+        lives--;
+
+        livesCounter.text = "Lives: " + lives;
+        for (int i = 0; i < livesIcons.Count; i++)
+        {
+            livesIcons[i].enabled = i < lives;
+        }
+
+        if (lives <= 0)
+        {
+            GameOver();
+            return; 
+        }
+
+        // Move player and reset velocity
+        playerRb.velocity = Vector3.zero;
+        playerRb.angularVelocity = Vector3.zero;
+        transform.position = carRespawn;
+        transform.rotation = Quaternion.Euler(respawnRotation);
+    }
+
+    public void GameOver()
+    {
+        print("Game Lose");
     }
 
     void FixedUpdate()
@@ -94,6 +161,7 @@ private RaycastHit slopeHit;
         // Get player movement input
         float x = Input.GetAxisRaw("Horizontal");
         float z = Input.GetAxisRaw("Vertical");
+
 
         // Calculate movement direction and apply stumble modifier
         moveDirection = transform.right * (x + stumbleModifier.x) + transform.forward * (z + stumbleModifier.z);
@@ -103,7 +171,7 @@ private RaycastHit slopeHit;
         Vector3 velocity = new Vector3(moveDirection.x * currentSpeed, playerRb.velocity.y, moveDirection.z * currentSpeed);
         playerRb.velocity = velocity;
 
-        // Apply stumble drift to camera (now in LateUpdate for smoother rotation)
+        // Apply stumble drift to camera 
         cameraController.StumbleDrift(stumbleModifier);
 
 

@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,22 +8,28 @@ public class CameraController : MonoBehaviour
     public float sensY = 5f;
 
     private float xRotation = 0f;
-    private Transform playerBody;
+    private float yRotation = 0f;
+
+    public Transform playerBody; 
 
     private Vector3 stumbleRotation;
-    
 
     void Start()
     {
-        // Lock and hide cursor
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        // Find player
-        playerBody = GameObject.FindWithTag("Player").transform;
+        GameObject player = GameObject.FindWithTag("Player");
+        playerBody = player.transform;
+
+
+        // Initialize rotation seperately
+        Vector3 initialRotation = transform.localEulerAngles;
+        xRotation = initialRotation.x;
+        yRotation = initialRotation.y;
     }
 
-    void Update()
+    void LateUpdate()
     {
         // Player input
         float mouseX = Input.GetAxis("Mouse X") * sensX;
@@ -33,14 +39,12 @@ public class CameraController : MonoBehaviour
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -90f, 90f);
 
-        // Apply vertical rotation
+        // Rotate player horizontally 
+        yRotation += mouseX;
+
+        // Apply rotation to camera and player
         transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f) * Quaternion.Euler(stumbleRotation);
-
-
-        // Rotate player horizontally
-        playerBody.Rotate(Vector3.up * mouseX);
-
-
+        playerBody.rotation = Quaternion.Euler(0f, yRotation, 0f);
     }
 
     public void StumbleDrift(Vector3 stumbleModifier)
@@ -48,4 +52,3 @@ public class CameraController : MonoBehaviour
         stumbleRotation = Vector3.Lerp(stumbleRotation, new Vector3(stumbleModifier.z * 5f, stumbleModifier.x * 5f, stumbleModifier.x * 5f), 2f * Time.deltaTime);
     }
 }
-
