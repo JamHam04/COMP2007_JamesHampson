@@ -19,7 +19,7 @@ public class PlayerController : MonoBehaviour
     public Vector3 carRespawn = new Vector3(163, 15, 44);
     public Vector3 respawnRotation = new Vector3(0, 90, 0);
 
-    
+
     private Vector3 moveDirection;
     private Vector3 stumbleModifier;
 
@@ -30,6 +30,9 @@ public class PlayerController : MonoBehaviour
     private Rigidbody playerRb;
     private CameraController cameraController;
 
+    Animator animator;
+
+    private bool isStartingUp = true;
 
 
 
@@ -39,10 +42,28 @@ public class PlayerController : MonoBehaviour
         playerRb.freezeRotation = true;
 
         cameraController = GetComponentInChildren<CameraController>();
+
+        // Start animation
+        animator = GetComponent<Animator>();
+
+
+
+    }
+
+    public void WokenUp()
+    {
+        isStartingUp = false;
+        cameraController.isStartingUp = false;
     }
 
     void Update()
     {
+        if (Input.GetKey(KeyCode.E))
+        {
+            animator.SetTrigger("WakeUp");
+            Invoke("WokenUp", 2f);
+        }
+
         // Adjust speed based on sprinting
         if (Input.GetKey(KeyCode.LeftShift))
         {
@@ -66,27 +87,29 @@ public class PlayerController : MonoBehaviour
 
         Vector3 stumbleRange;
 
-        if (x != 0 || z != 0)
+        if (isOnGround)
         {
-            stumbleRange = new Vector3(
-                Random.Range(-stumbleAmount, stumbleAmount) * currentSpeed,
-                0,
-                Random.Range(-stumbleAmount, stumbleAmount) * currentSpeed
-            );
-        } else
-        {
-            // Calculate random "Stumble" movement (to be applied in FixedUpdate)
-            stumbleRange = new Vector3(
-                Random.Range(-stumbleAmount, stumbleAmount),
-                0,
-                Random.Range(-stumbleAmount, stumbleAmount)
-            );
+
+            if (x != 0 || z != 0)
+            {
+                stumbleRange = new Vector3(
+                    Random.Range(-stumbleAmount, stumbleAmount) * currentSpeed / 2,
+                    0,
+                    Random.Range(-stumbleAmount, stumbleAmount) * currentSpeed / 2
+                );
+            }
+            else
+            {
+                stumbleRange = new Vector3(
+                    Random.Range(-stumbleAmount, stumbleAmount),
+                    0,
+                    Random.Range(-stumbleAmount, stumbleAmount)
+                );
+            }
+
+
+            stumbleModifier = Vector3.Lerp(stumbleModifier, stumbleRange, 1f * Time.deltaTime);
         }
-
-
-
-        // Smoothly interpolate the stumble modifier
-        stumbleModifier = Vector3.Lerp(stumbleModifier, stumbleRange, 1f * Time.deltaTime);
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -112,25 +135,32 @@ public class PlayerController : MonoBehaviour
 
     private void RiverTeleport()
     {
-        // Subtract life
-        lives--;
+        deductLife();
 
-        if (lives <= 0)
-        {
-            GameOver();
-            return;
-        }
-        // Move player and reset velocity
-        playerRb.velocity = Vector3.zero; 
-        playerRb.angularVelocity = Vector3.zero;
-        transform.position = riverRespawn;
-        transform.rotation = Quaternion.Euler(respawnRotation);
+        teleportPlayer(riverRespawn);
     }
 
     private void CarTeleport()
     {
+        deductLife();
+
+        teleportPlayer(carRespawn);
+
+    }
+
+    private void teleportPlayer(Vector3 spawnLocation)
+    {
+        playerRb.velocity = Vector3.zero;
+        playerRb.angularVelocity = Vector3.zero;
+        transform.position = spawnLocation;
+        transform.rotation = Quaternion.Euler(respawnRotation);
+    }
+
+    private void deductLife()
+    {
         // Subtract life
         lives--;
+
 
         livesCounter.text = "Lives: " + lives;
         for (int i = 0; i < livesIcons.Count; i++)
@@ -138,19 +168,13 @@ public class PlayerController : MonoBehaviour
             livesIcons[i].enabled = i < lives;
         }
 
+
         if (lives <= 0)
         {
             GameOver();
-            return; 
+            return;
         }
-
-        // Move player and reset velocity
-        playerRb.velocity = Vector3.zero;
-        playerRb.angularVelocity = Vector3.zero;
-        transform.position = carRespawn;
-        transform.rotation = Quaternion.Euler(respawnRotation);
     }
-
     public void GameOver()
     {
         print("Game Lose");
@@ -158,6 +182,8 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (isStartingUp) return;
+
         // Get player movement input
         float x = Input.GetAxisRaw("Horizontal");
         float z = Input.GetAxisRaw("Vertical");

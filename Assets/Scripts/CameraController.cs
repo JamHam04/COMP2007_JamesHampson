@@ -7,12 +7,20 @@ public class CameraController : MonoBehaviour
     public float sensX = 5f;
     public float sensY = 5f;
 
+    // Camera Rotation
     private float xRotation = 0f;
     private float yRotation = 0f;
+
+    // Target Camera Rotation (For Lerp effect)
+    private float cameraDrunkSpeed = 5f;
+    private float targetXRotation = 0f;
+    private float targetYRotation = 0f;
 
     public Transform playerBody; 
 
     private Vector3 stumbleRotation;
+
+    public bool isStartingUp = true;
 
     void Start()
     {
@@ -31,16 +39,21 @@ public class CameraController : MonoBehaviour
 
     void LateUpdate()
     {
+        if (isStartingUp) return;
         // Player input
         float mouseX = Input.GetAxis("Mouse X") * sensX;
         float mouseY = Input.GetAxis("Mouse Y") * sensY;
 
-        // Rotate vertically up to 90 degrees each direction
-        xRotation -= mouseY;
-        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
+        // Store target
+        targetXRotation -= mouseY;
+        targetYRotation += mouseX;
 
-        // Rotate player horizontally 
-        yRotation += mouseX;
+        // Rotate vertically up to 90 degrees each direction
+        targetXRotation = Mathf.Clamp(targetXRotation, -90f, 90f);
+
+        // Smoothly lag behind
+        xRotation = Mathf.Lerp(xRotation, targetXRotation, Time.deltaTime * cameraDrunkSpeed);
+        yRotation = Mathf.Lerp(yRotation, targetYRotation, Time.deltaTime * cameraDrunkSpeed);
 
         // Apply rotation to camera and player
         transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f) * Quaternion.Euler(stumbleRotation);
@@ -49,6 +62,7 @@ public class CameraController : MonoBehaviour
 
     public void StumbleDrift(Vector3 stumbleModifier)
     {
-        stumbleRotation = Vector3.Lerp(stumbleRotation, new Vector3(stumbleModifier.z * 5f, stumbleModifier.x * 5f, stumbleModifier.x * 5f), 2f * Time.deltaTime);
+
+        stumbleRotation = Vector3.Lerp(stumbleRotation, new Vector3(-stumbleModifier.z * 5f, 0f, -stumbleModifier.x * 5f), 2f * Time.deltaTime);
     }
 }
