@@ -30,9 +30,13 @@ public class PlayerController : MonoBehaviour
     private Rigidbody playerRb;
     private CameraController cameraController;
 
-    Animator animator;
+    Animator playerAnimator;
+    Animator canvasAnimator;
+    Animator sunlightAnimator;
 
     private bool isStartingUp = true;
+    private bool isSleeping = false;
+    public GameObject wakeUpPrompt;
 
 
 
@@ -44,24 +48,54 @@ public class PlayerController : MonoBehaviour
         cameraController = GetComponentInChildren<CameraController>();
 
         // Start animation
-        animator = GetComponent<Animator>();
+        playerAnimator = GetComponent<Animator>();
+        canvasAnimator = GameObject.Find("Canvas/EyeClose").GetComponent<Animator>();
+        sunlightAnimator = GameObject.Find("Directional Light").GetComponent<Animator>();
 
-
+        Invoke("Sleep", 2f);
 
     }
 
+
+
+    // Close eyes at start of game
+    public void Sleep()
+    {
+        canvasAnimator.SetTrigger("Sleep");
+        Invoke("Asleep", 6f);
+    }
+
+    // Delay for eye closing animation to play at start
+    public void Asleep()
+    {
+        isSleeping = true;
+        wakeUpPrompt.SetActive(true);
+    }
+
+    // Start sit up animation
+    public void StandUp()
+    {
+        playerAnimator.SetTrigger("WakeUp");
+        Invoke("WokenUp", 3f);
+    }
+
+    // Allow movement once woken up
     public void WokenUp()
     {
         isStartingUp = false;
         cameraController.isStartingUp = false;
     }
 
+
+
     void Update()
     {
-        if (Input.GetKey(KeyCode.E))
+        if (Input.GetKey(KeyCode.E) && isSleeping == true)
         {
-            animator.SetTrigger("WakeUp");
-            Invoke("WokenUp", 2f);
+            sunlightAnimator.SetTrigger("Night"); // Set time to night
+            canvasAnimator.SetTrigger("Wake"); // Start eye open animation
+            Invoke("StandUp", 6f); // Start sit up animation
+            wakeUpPrompt.SetActive(false);
         }
 
         // Adjust speed based on sprinting
