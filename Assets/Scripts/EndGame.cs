@@ -6,6 +6,10 @@ public class EndGame : MonoBehaviour
 {
     public GameObject interactPromptUI; 
     private bool isPlayerNear = false;
+
+    Animator canvasAnimator;
+
+    public PlayerController playerController;
     // Start is called before the first frame update
     void Start()
     {
@@ -18,6 +22,9 @@ public class EndGame : MonoBehaviour
         if (isPlayerNear && Input.GetKeyDown(KeyCode.E))
         {
             print("Game Win");
+            playerController.isStartingUp = true;
+            canvasAnimator = GameObject.Find("Canvas/EyeClose").GetComponent<Animator>();
+            canvasAnimator.SetTrigger("Sleep");
         }
     }
 

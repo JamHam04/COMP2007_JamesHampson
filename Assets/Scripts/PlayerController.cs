@@ -34,9 +34,12 @@ public class PlayerController : MonoBehaviour
     Animator canvasAnimator;
     Animator sunlightAnimator;
 
-    private bool isStartingUp = true;
+    public bool isStartingUp = true;
     private bool isSleeping = false;
     public GameObject wakeUpPrompt;
+
+    private float timer;
+    public TextMeshProUGUI timerCount;
 
 
 
@@ -76,6 +79,7 @@ public class PlayerController : MonoBehaviour
     public void StandUp()
     {
         playerAnimator.SetTrigger("WakeUp");
+
         Invoke("WokenUp", 3f);
     }
 
@@ -84,6 +88,13 @@ public class PlayerController : MonoBehaviour
     {
         isStartingUp = false;
         cameraController.isStartingUp = false;
+
+        // Activate Lives
+        foreach (Image life in livesIcons)
+        {
+            life.gameObject.SetActive(true); 
+        }
+
     }
 
 
@@ -96,6 +107,7 @@ public class PlayerController : MonoBehaviour
             canvasAnimator.SetTrigger("Wake"); // Start eye open animation
             Invoke("StandUp", 6f); // Start sit up animation
             wakeUpPrompt.SetActive(false);
+            isSleeping = false;
         }
 
         // Adjust speed based on sprinting
@@ -127,9 +139,9 @@ public class PlayerController : MonoBehaviour
             if (x != 0 || z != 0)
             {
                 stumbleRange = new Vector3(
-                    Random.Range(-stumbleAmount, stumbleAmount) * currentSpeed / 2,
+                    Random.Range(-stumbleAmount, stumbleAmount) * currentSpeed / 2f, // More on X
                     0,
-                    Random.Range(-stumbleAmount, stumbleAmount) * currentSpeed / 2
+                    Random.Range(-stumbleAmount, stumbleAmount) * currentSpeed / 4f // Less on Z 
                 );
             }
             else
@@ -143,6 +155,18 @@ public class PlayerController : MonoBehaviour
 
 
             stumbleModifier = Vector3.Lerp(stumbleModifier, stumbleRange, 1f * Time.deltaTime);
+        }
+
+        // Timer
+        if (isStartingUp == false)
+        {
+            timerCount.gameObject.SetActive(true);
+            timer += Time.deltaTime;
+
+            // Convert to int
+            int minutes = Mathf.FloorToInt(timer / 60);
+            int seconds = Mathf.FloorToInt(timer % 60);
+            timerCount.text = string.Format("{0:00}:{1:00}", minutes, seconds); // Show in 00:00 format
         }
     }
 
