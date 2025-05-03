@@ -41,11 +41,16 @@ public class PlayerController : MonoBehaviour
     private float timer;
     public TextMeshProUGUI timerCount;
 
+    public AudioSource jumpSound;
+    public EndGame endGame;
+
 
 
     void Start()
     {
+        stumbleAmount = DifficultySettings.stumbleAmount;
         playerRb = GetComponent<Rigidbody>();
+        jumpSound = GetComponent<AudioSource>();
         playerRb.freezeRotation = true;
 
         cameraController = GetComponentInChildren<CameraController>();
@@ -121,10 +126,11 @@ public class PlayerController : MonoBehaviour
         }
 
         // Jumping logic
-        if (Input.GetKeyDown(KeyCode.Space) && isOnGround)
+        if (Input.GetKeyDown(KeyCode.Space) && isOnGround && !isStartingUp)
         {
             playerRb.velocity = new Vector3(playerRb.velocity.x, jumpForce, playerRb.velocity.z);
             isOnGround = false; // Player is in air
+            jumpSound.Play();
         }
 
         float x = Input.GetAxisRaw("Horizontal");
@@ -229,14 +235,11 @@ public class PlayerController : MonoBehaviour
 
         if (lives <= 0)
         {
-            GameOver();
+            endGame.GameOver();
             return;
         }
     }
-    public void GameOver()
-    {
-        print("Game Lose");
-    }
+
 
     void FixedUpdate()
     {
