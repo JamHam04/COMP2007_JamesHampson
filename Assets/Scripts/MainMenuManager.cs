@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class MainMenyManager : MonoBehaviour
+public class MainMenuManager : MonoBehaviour
 {
+    public GameObject tutorialPanel;
+
     public void Start()
     {
+        // Unlock cursor to select options
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
     }
@@ -25,5 +28,15 @@ public class MainMenyManager : MonoBehaviour
     {
         DifficultySettings.stumbleAmount = 7.5f;
         SceneManager.LoadScene("MainGame");
+    }
+
+    public void showTutorial ()
+    {
+        tutorialPanel.SetActive(true);
+    }
+
+    public void hideTutorial () 
+    {  
+        tutorialPanel.SetActive(false); 
     }
 }

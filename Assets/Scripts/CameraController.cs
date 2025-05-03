@@ -24,6 +24,7 @@ public class CameraController : MonoBehaviour
 
     void Start()
     {
+        // Lock cursor
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
@@ -62,7 +63,7 @@ public class CameraController : MonoBehaviour
 
     public void StumbleDrift(Vector3 stumbleModifier)
     {
-
+        // Set stumble camera rotation
         stumbleRotation = Vector3.Lerp(stumbleRotation, new Vector3(-stumbleModifier.z * 5f, 0f, -stumbleModifier.x * 5f), 2f * Time.deltaTime);
     }
 }

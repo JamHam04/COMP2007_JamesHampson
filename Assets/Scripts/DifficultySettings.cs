@@ -4,6 +4,5 @@ using UnityEngine;
 
 public static class DifficultySettings 
 {
-    public static float stumbleAmount = 2f;
-    // Any other difficulty settings:
+    public static float stumbleAmount = 5f; // Set default stumble amount
 }

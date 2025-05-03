@@ -24,7 +24,6 @@ public class PlayerController : MonoBehaviour
     private Vector3 stumbleModifier;
 
     public int lives = 3;
-    public TextMeshProUGUI livesCounter;
     public List<Image> livesIcons;
 
     private Rigidbody playerRb;
@@ -48,6 +47,7 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
+        // Set components
         stumbleAmount = DifficultySettings.stumbleAmount;
         playerRb = GetComponent<Rigidbody>();
         jumpSound = GetComponent<AudioSource>();
@@ -128,11 +128,12 @@ public class PlayerController : MonoBehaviour
         // Jumping logic
         if (Input.GetKeyDown(KeyCode.Space) && isOnGround && !isStartingUp)
         {
-            playerRb.velocity = new Vector3(playerRb.velocity.x, jumpForce, playerRb.velocity.z);
+            playerRb.velocity = new Vector3(playerRb.velocity.x, jumpForce, playerRb.velocity.z); // Jump
             isOnGround = false; // Player is in air
             jumpSound.Play();
         }
 
+        // Get input axis
         float x = Input.GetAxisRaw("Horizontal");
         float z = Input.GetAxisRaw("Vertical");
 
@@ -144,6 +145,7 @@ public class PlayerController : MonoBehaviour
 
             if (x != 0 || z != 0)
             {
+                // Calculate stumble range when moving
                 stumbleRange = new Vector3(
                     Random.Range(-stumbleAmount, stumbleAmount) * currentSpeed / 2f, // More on X
                     0,
@@ -152,6 +154,7 @@ public class PlayerController : MonoBehaviour
             }
             else
             {
+                // Calculate stumble range when standing still
                 stumbleRange = new Vector3(
                     Random.Range(-stumbleAmount, stumbleAmount),
                     0,
@@ -159,7 +162,7 @@ public class PlayerController : MonoBehaviour
                 );
             }
 
-
+            // Set smooth stumble modifier
             stumbleModifier = Vector3.Lerp(stumbleModifier, stumbleRange, 1f * Time.deltaTime);
         }
 
@@ -184,11 +187,13 @@ public class PlayerController : MonoBehaviour
             isOnGround = true;
         }
 
+        // When player hits water
         if (collision.gameObject.CompareTag("Water"))
         {
             RiverTeleport();
         }
 
+        // When player hit by car
         if (collision.gameObject.CompareTag("Car"))
         {
             CarTeleport();
@@ -212,6 +217,7 @@ public class PlayerController : MonoBehaviour
 
     }
 
+    // Teleport player to respawn at section
     private void teleportPlayer(Vector3 spawnLocation)
     {
         playerRb.velocity = Vector3.zero;
@@ -225,14 +231,13 @@ public class PlayerController : MonoBehaviour
         // Subtract life
         lives--;
 
-
-        livesCounter.text = "Lives: " + lives;
+        // Update life counter
         for (int i = 0; i < livesIcons.Count; i++)
         {
             livesIcons[i].enabled = i < lives;
         }
 
-
+        // End game when running out of lives
         if (lives <= 0)
         {
             endGame.GameOver();

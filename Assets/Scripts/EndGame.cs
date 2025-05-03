@@ -19,42 +19,42 @@ public class EndGame : MonoBehaviour
     Animator canvasAnimator;
 
     public PlayerController playerController;
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
 
     // Update is called once per frame
     void Update()
     {
+        // If the player is by the end door
         if (isPlayerNear && Input.GetKeyDown(KeyCode.E))
         {
-            print("Game Win");
             playerController.isStartingUp = true;
+            // Fade to black
             canvasAnimator = GameObject.Find("Canvas/EyeClose").GetComponent<Animator>();
             canvasAnimator.SetTrigger("Sleep");
-            Invoke("showReturn", 2f);
+            Invoke("showReturn", 2f); // Show end text after screen is fully faded
         }
 
+        // Return to Menu
         if (Input.GetKeyDown(KeyCode.E) && endGame)
         {
             SceneManager.LoadScene("MainMenu");
         }
 
+        // Return to Start
         if (Input.GetKeyDown(KeyCode.E) && gameOver)
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
     }
 
+    // Display return to menu text
     public void showReturn()
     {
         returnToMenuText.gameObject.SetActive(true);
         winText.gameObject.SetActive(true);
-        endGame = true;
+        endGame = true; // Enable ability to return to menu
     }
 
+    // Show Enter text
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
@@ -64,6 +64,7 @@ public class EndGame : MonoBehaviour
         }
     }
 
+    // Hide Enter text
     private void OnTriggerExit(Collider other)
     {
         if (other.CompareTag("Player"))
@@ -73,6 +74,7 @@ public class EndGame : MonoBehaviour
         }
     }
 
+    
     public void GameOver()
     {
         playerController.isStartingUp = true;
@@ -83,6 +85,7 @@ public class EndGame : MonoBehaviour
         Invoke("showRestart", 2f); 
     }
 
+    // Show restart game text
     private void showRestart()
     {
         gameOver = true;
