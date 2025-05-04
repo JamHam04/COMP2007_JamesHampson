@@ -6,13 +6,19 @@ using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
-    public float speed = 5f;
-    public float sprintSpeed = 10f;
+    public float speed = 3f;
+    public float sprintSpeed = 6f;
     public float currentSpeed;
     public float gravity = 9.81f;
     public float jumpForce = 5f;
-    public float stumbleAmount = 2f;
+    public float stumbleAmount = 5f;
     private bool isOnGround = true;
+
+    // Stamina
+    public float maxStamina = 3f;
+    public float currentStamina = 3f;
+    public bool sprinting;
+    public Image staminaBar;
 
     // Respawn Locations
     public Vector3 riverRespawn = new Vector3(93, 9, 44);
@@ -41,6 +47,7 @@ public class PlayerController : MonoBehaviour
     public TextMeshProUGUI timerCount;
 
     public AudioSource jumpSound;
+    private AudioSource gameMusic;
     public EndGame endGame;
 
 
@@ -49,8 +56,11 @@ public class PlayerController : MonoBehaviour
     {
         // Set components
         stumbleAmount = DifficultySettings.stumbleAmount;
+        maxStamina = DifficultySettings.maxStamina;       
+        currentStamina = DifficultySettings.currentStamina; 
         playerRb = GetComponent<Rigidbody>();
         jumpSound = GetComponent<AudioSource>();
+        gameMusic = GameObject.Find("GameMusic").GetComponent<AudioSource>();
         playerRb.freezeRotation = true;
 
         cameraController = GetComponentInChildren<CameraController>();
@@ -100,6 +110,9 @@ public class PlayerController : MonoBehaviour
             life.gameObject.SetActive(true); 
         }
 
+        staminaBar.gameObject.SetActive(true);
+        gameMusic.Play();
+
     }
 
 
@@ -116,14 +129,35 @@ public class PlayerController : MonoBehaviour
         }
 
         // Adjust speed based on sprinting
-        if (Input.GetKey(KeyCode.LeftShift))
+        if (Input.GetKey(KeyCode.LeftShift) && currentStamina > 0)
         {
             currentSpeed = sprintSpeed; // Sprint speed
+            sprinting = true;
+            currentStamina -= Time.deltaTime;
         }
         else
         {
             currentSpeed = speed; // Normal speed
+            sprinting = false;
+            if (!Input.GetKey(KeyCode.LeftShift))
+            {
+                currentStamina += Time.deltaTime * 0.5f;
+            }
         }
+
+        if (currentStamina >= maxStamina - 0.01f)
+        {
+            staminaBar.gameObject.SetActive(false);
+        }
+        else
+        {
+            staminaBar.gameObject.SetActive(true);
+        }
+
+        staminaBar.fillAmount = currentStamina / maxStamina; // Update stamina bar
+        currentStamina = Mathf.Clamp(currentStamina, 0, maxStamina); // Keep stamina from going over max
+
+
 
         // Jumping logic
         if (Input.GetKeyDown(KeyCode.Space) && isOnGround && !isStartingUp)

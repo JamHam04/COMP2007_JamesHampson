@@ -27,6 +27,7 @@ public class EndGame : MonoBehaviour
         if (isPlayerNear && Input.GetKeyDown(KeyCode.E))
         {
             playerController.isStartingUp = true;
+            interactPromptUI.SetActive(false);
             // Fade to black
             canvasAnimator = GameObject.Find("Canvas/EyeClose").GetComponent<Animator>();
             canvasAnimator.SetTrigger("Sleep");
